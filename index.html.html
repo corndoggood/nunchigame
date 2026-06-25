@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sentence Randomizer</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Tahoma, Geneva, sans-serif;
+        }
+
+        /* THEMES */
+
+        body.ready {
+            background-color: #fff7cc; /* pale yellow */
+            color: #b58900;            /* darker yellow */
+        }
+
+        body.sentence {
+            background-color: #f1f8e9; /* pale green */
+            color: #2f5d2f;            /* forest green */
+        }
+	
+
+        /* SETUP SCREEN */
+
+        #setup {
+            padding: 30px;
+            text-align: center;
+        }
+
+        textarea {
+            width: 80%;
+            height: 300px;
+            font-size: 18px;
+            font-family: Tahoma, Geneva, sans-serif;
+        }
+
+        /* RANDOMIZER SCREEN */
+
+        #randomizer {
+            display: none;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #display {
+            font-size: min(8vw, 120px);
+            font-weight: bold;
+            text-align: center;
+            width: 90%;
+            padding: 20px;
+        }
+
+        /* NEXT BUTTON */
+
+        #nextButton {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2em;
+            padding: 15px 30px;
+            z-index: 100;
+            font-family: Tahoma, Geneva, sans-serif;
+        }
+
+        /* EDIT BUTTON */
+
+        #editButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 1em;
+            padding: 10px 15px;
+            z-index: 100;
+            font-family: Tahoma, Geneva, sans-serif;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+    <h1>Sentence Randomizer</h1>
+
+    <p>Enter one sentence per line:</p>
+
+    <textarea id="sentenceInput">The cat sat on the mat.
+Birds fly south for winter.
+Coffee tastes best in the morning.
+The moon was bright tonight.</textarea>
+
+    <br><br>
+
+    <button onclick="startRandomizer()">
+        Start Randomizer
+    </button>
+</div>
+
+<!-- RANDOMIZER SCREEN -->
+<div id="randomizer">
+
+    <button id="editButton" onclick="showEditor()">
+        Edit Sentences
+    </button>
+
+    <div id="display">Ready?</div>
+
+    <button id="nextButton" onclick="nextItem()">
+        Next
+    </button>
+
+</div>
+
+<script>
+
+let sentences = [];
+let shuffled = [];
+let sentenceIndex = 0;
+let showingReady = false;
+
+/* SHUFFLE */
+function shuffleSentences() {
+    shuffled = [...sentences];
+
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    sentenceIndex = 0;
+}
+
+/* START */
+function startRandomizer() {
+
+    const rawText = document.getElementById("sentenceInput").value;
+
+    sentences = rawText
+        .split("\n")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+    if (sentences.length === 0) {
+        alert("Please enter at least one sentence.");
+        return;
+    }
+
+    shuffleSentences();
+
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("randomizer").style.display = "flex";
+
+    document.body.classList.add("ready");
+    document.body.classList.remove("sentence");
+
+    document.getElementById("display").textContent = "Ready?";
+    showingReady = false;
+}
+
+/* NEXT */
+function nextItem() {
+
+    const display = document.getElementById("display");
+
+    if (!showingReady) {
+
+        if (sentenceIndex >= shuffled.length) {
+            shuffleSentences();
+        }
+
+        display.textContent = shuffled[sentenceIndex];
+        sentenceIndex++;
+
+        document.body.classList.remove("ready");
+        document.body.classList.add("sentence");
+
+        showingReady = true;
+
+    } else {
+
+        display.textContent = "Ready?";
+
+        document.body.classList.remove("sentence");
+        document.body.classList.add("ready");
+
+        showingReady = false;
+    }
+}
+
+/* EDIT */
+function showEditor() {
+    document.getElementById("randomizer").style.display = "none";
+    document.getElementById("setup").style.display = "block";
+}
+
+/* SPACEBAR CONTROL */
+document.addEventListener("keydown", function(event) {
+    if (event.code === "Space") {
+        if (document.getElementById("randomizer").style.display === "flex") {
+            event.preventDefault();
+            nextItem();
+        }
+    }
+});
+
+/* CLICK ANYWHERE TO ADVANCE */
+document.addEventListener("click", function(event) {
+    if (event.target.tagName === "BUTTON") return;
+
+    if (document.getElementById("randomizer").style.display === "flex") {
+        nextItem();
+    }
+});
+
+</script>
+
+</body>
+</html>
